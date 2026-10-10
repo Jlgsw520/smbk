@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>jsDelivr 链接生成器</title>
+<style>
+*{box-sizing:border-box}
+body{
+  background:#0a0c0f;color:#e7ecf3;
+  font:14px/1.6 system-ui,-apple-system,"PingFang SC",sans-serif;
+  max-width:720px;margin:0 auto;padding:24px 16px;
+}
+h1{font-size:18px;margin:0 0 4px}
+.sub{color:#7c8798;font-size:13px;margin:0 0 20px}
+label{display:block;font-size:13px;color:#aab5c4;margin:12px 0 4px}
+input,select{
+  width:100%;padding:10px 12px;border-radius:8px;
+  background:#12161d;border:1px solid #232b36;color:#e7ecf3;
+  font:13px ui-monospace,Menlo,monospace;outline:none;
+}
+input:focus{border-color:#3b7ddd}
+button{
+  margin-top:16px;padding:10px 20px;border:0;border-radius:8px;
+  background:#3b7ddd;color:#fff;font-size:14px;font-weight:600;cursor:pointer;
+}
+button:hover{background:#4c8be8}
+button:disabled{opacity:.5;cursor:default}
+#out{
+  margin-top:16px;width:100%;min-height:240px;padding:12px;
+  border-radius:8px;background:#0a0d12;border:1px solid #232b36;
+  color:#dbe4f0;font:12.5px/1.7 ui-monospace,Menlo,monospace;
+  resize:vertical;outline:none;
+}
+.status{margin-top:8px;font-size:12.5px;color:#8c98a8;min-height:20px}
+.status.err{color:#e5484d}
+.status.ok{color:#3ecf8e}
+.tip{
+  margin-top:20px;padding:12px 14px;border-radius:10px;
+  background:#12161d;border:1px solid #232b36;
+  font-size:12.5px;color:#8c98a8;line-height:1.7;
+}
+.tip code{background:#1b2029;padding:1.5px 5px;border-radius:4px;color:#9db4d4}
+</style>
+</head>
+<body>
+
+<h1>jsDelivr 链接生成器</h1>
+<p class="sub">从 GitHub 仓库目录自动生成链接，复制到 groups/*.json</p >
+
+<label>GitHub 用户名</label>
+<input id="user" placeholder="zhang">
+
+<label>仓库名</label>
+<input id="repo" placeholder="my-pics">
+
+<label>分支</label>
+<input id="branch" value="main">
+
+<label>图片目录（相对仓库根）</label>
+<input id="dir" value="images/scenery">
+
+<label>排序方式</label>
+<select id="sort">
+  <option value="name">按文件名（自然排序）</option>
+  <option value="none">GitHub 返回顺序</option>
+</select>
+
+<button id="btn">生成</button>
+<div class="status" id="status"></div>
+
+<textarea id="out" placeholder="生成结果会显示在这里…" spellcheck="false"></textarea>
+
+<div class="tip">
+  <strong>提示</strong><br>
+  · 目录和文件名建议用 <code>英文/数字</code>，中文路径会被 URL 编码，容易出问题<br>
+  · 单张图别超过 <code>50MB</code>（jsDelivr 限制）<br>
+  · 上传图片后，jsDelivr 可能需要几分钟同步，急的话在链接后加 <code>?v=2</code> 强制刷新<br>
+  · 未登录的 GitHub API 每小时 60 次，够用；超了等一小时
+</div>
+
+<script>
+(function(){
+'use strict';
+var $ = function(id){ return document.getElementById(id); };
+var btn = $('btn'), status = $('status'), out = $('out');
+
+function setStatus(msg, cls){
+  status.textContent = msg || '';
+  status.className = 'status' + (cls ? ' ' + cls : '');
+}
+
+function naturalSort(a, b){
+  return a.localeCompare(b, 'zh-Hans-CN', { numeric: true, sensitivity: 'base' });
+}
+
+async function generate(){
+  var user = $('user').value.trim();
+  var repo = $('repo').value.trim();
+  var branch = $('branch').value.trim() || 'main';
+  var dir = $('dir').value.trim().replace(/^\/+|\/+$/g, '');
+  var sortMode = $('sort').value;
+
+  if (!user || !repo || !dir){
+    setStatus('用户名、仓库名、目录都要填', 'err');
+    return;
+  }
+
+  btn.disabled = true;
+  setStatus('正在请求 GitHub…');
+  out.value = '';
+
+  var api = 'https://api.github.com/repos/' + user + '/' + repo
+          + '/contents/' + dir.split('/').map(encodeURIComponent).join('/')
+          + '?ref=' + encodeURIComponent(branch);
+
+  try {
+    var r = await fetch(api, { headers: { Accept: 'application/vnd.github+json' } });
+    if (r.status === 404) throw new Error('找不到目录，检查路径和分支');
+    if (r.status === 403) throw new Error('GitHub API 频率超限，等一小时再试');
+    if (!r.ok) throw new Error('GitHub 返回 ' + r.status);
+
+    var arr = await r.json();
+    if (!Array.isArray(arr)) throw new Error('目标路径不是文件夹');
+
+    var IMG = /\.(jpe?g|png|gif|webp|avif|bmp|svg)$/i;
+    var files = arr
+      .filter(function(it){ return it.type === 'file' && IMG.test(it.name); })
+      .map(function(it){ return it.name; });
+
+    if (!files.length) throw new Error('目录里没有图片');
+
+    if (sortMode === 'name') files.sort(naturalSort);
+
+    var base = 'https://cdn.jsdelivr.net/gh/' + user + '/' + repo
+             + '@' + branch + '/' + dir + '/';
+
+    var lines = files.map(function(name){
+      return '  "' + base + encodeURIComponent(name) + '"';
+    });
+
+    out.value = '[\n' + lines.join(',\n') + '\n]';
+    setStatus('生成 ' + files.length + ' 条，已按' + (sortMode === 'name' ? '文件名' : '返回顺序') + '排列', 'ok');
+  } catch (err){
+    setStatus(String(err.message || err), 'err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+btn.addEventListener('click', generate);
+
+// 回车触发
+document.querySelectorAll('input').forEach(function(inp){
+  inp.addEventListener('keydown', function(e){
+    if (e.key === 'Enter') generate();
+  });
+});
+})();
+</script>
+</body>
+</html>
