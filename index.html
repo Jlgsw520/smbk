@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0c0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>图片集</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;min-height:100%}
+body{
+  background:#0a0c0f;color:#e7ecf3;
+  font:15px/1.5 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  -webkit-user-select:none;user-select:none;
+  background-image:
+    radial-gradient(700px 420px at 50% -10%,#151a23 0%,transparent 70%),
+    radial-gradient(500px 380px at 50% 110%,#10151d 0%,transparent 70%);
+  background-attachment:fixed;
+}
+.wrap{
+  max-width:720px;margin:0 auto;
+  padding:calc(24px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom));
+}
+h1{margin:0 0 4px;font-size:22px;font-weight:700;letter-spacing:.3px}
+.sub{color:#7c8798;font-size:13px;margin:0 0 18px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media (min-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
+.card{
+  position:relative;aspect-ratio:4/5;border-radius:16px;overflow:hidden;
+  background:#131820;cursor:pointer;
+  border:1px solid rgba(255,255,255,.05);
+  transition:transform .12s,border-color .12s;
+  -webkit-user-select:none;user-select:none;
+}
+.card:active{transform:scale(.97);border-color:rgba(91,157,255,.4)}
+.cover{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;opacity:.75;
+}
+.shade{
+  position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.85) 100%);
+}
+.info{
+  position:absolute;left:0;right:0;bottom:0;padding:12px 14px;pointer-events:none;
+}
+.info h3{
+  margin:0;font-size:15px;font-weight:600;
+  text-shadow:0 2px 8px rgba(0,0,0,.7);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.info .count{
+  font-size:12px;color:#a3b2c6;margin-top:2px;
+  text-shadow:0 1px 4px rgba(0,0,0,.7);
+}
+.no-cover{
+  position:absolute;inset:0;display:grid;place-items:center;
+  font-size:40px;opacity:.35;
+  background:linear-gradient(135deg,#1a2433,#101620);
+}
+.msg{text-align:center;padding:60px 20px;color:#7c8798;line-height:1.7}
+.msg h2{color:#ccd6e3;font-size:16px;font-weight:600;margin:0 0 8px}
+.msg code{background:#1b2029;padding:2px 6px;border-radius:5px;color:#9db4d4;font-size:12px}
+.msg .spin{
+  width:26px;height:26px;border-radius:50%;margin:0 auto 14px;
+  border:2.5px solid rgba(255,255,255,.15);border-top-color:#5b9dff;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="title">图片集</h1>
+  <p class="sub" id="sub">正在加载…</p >
+  <main id="content"></main>
+</div>
+<script>
+(function(){
+'use strict';
+var content = document.getElementById('content');
+var sub = document.getElementById('sub');
+
+function el(tag, cls, text){
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+function showMsg(html, spinning){
+  content.innerHTML = '';
+  var box = el('div', 'msg');
+  if (spinning) box.appendChild(el('div', 'spin'));
+  var tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  while (tmp.firstChild) box.appendChild(tmp.firstChild);
+  content.appendChild(box);
+}
+function render(groups){
+  content.innerHTML = '';
+  var grid = el('div', 'grid');
+  groups.forEach(function(g){
+    if (!g || (!g.file && !g.name)) return;
+    var card = el('div', 'card');
+    if (g.cover){
+      var img = document.createElement('img');
+      img.className = 'cover';
+      img.src = g.cover;
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.onerror = function(){
+        img.remove();
+        card.insertBefore(el('div', 'no-cover', '🖼'), card.firstChild);
+      };
+      card.appendChild(img);
+    } else {
+      card.appendChild(el('div', 'no-cover', '🖼'));
+    }
+    card.appendChild(el('div', 'shade'));
+    var info = el('div', 'info');
+    info.appendChild(el('h3', null, g.name || g.file));
+    if (g.count != null) info.appendChild(el('div', 'count', g.count + ' 张'));
+    card.appendChild(info);
+    var file = g.file || g.name;
+    var label = g.name || g.file;
+    card.addEventListener('click', function(){
+      location.href = 'reader.html?g=' + encodeURIComponent(file)
+                    + '&n=' + encodeURIComponent(label);
+    });
+    grid.appendChild(card);
+  });
+  content.appendChild(grid);
+}
+fetch('./list.json', { cache: 'no-cache' })
+  .then(function(r){
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  })
+  .then(function(data){
+    var groups = Array.isArray(data) ? data : (data.groups || []);
+    if (!groups.length){
+      sub.textContent = '';
+      showMsg('<h2>还没有分组</h2><p>请编辑 <code>list.json</code> 添加</p >');
+      return;
+    }
+    sub.textContent = '共 ' + groups.length + ' 个分组';
+    render(groups);
+    document.title = '图片集 · ' + groups.length + ' 组';
+  })
+  .catch(function(err){
+    sub.textContent = '';
+    showMsg('<h2>加载失败</h2><p>' + String(err.message || err) + '</p >');
+  });
+})();
+</script>
+</body>
+</html>
