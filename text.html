@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>测试</title>
+<style>
+body{margin:0;background:#000;color:#fff;font:15px sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:16px;padding:20px}
+img{max-width:100%;max-height:70vh;border-radius:8px}
+p{margin:0;font-size:14px;color:#8c98a8;word-break:break-all;max-width:90%;text-align:center}
+.ok{color:#3ecf8e}
+.err{color:#e5484d}
+</style>
+</head>
+<body>
+<p id="s">加载中…</p >
+< img id="im" alt="">
+<p id="u"></p >
+<script>
+var url='https://jlgsw520.github.io/smbk/images/dz/com.honor.browser_20261009200755.jpg';
+document.getElementById('u').textContent=url;
+var im=document.getElementById('im'),s=document.getElementById('s');
+im.onload=function(){s.textContent='✓ 成功';s.className='ok'};
+im.onerror=function(){s.textContent='✗ 失败';s.className='err'};
+im.src=url;
+</script>
+</body>
+</html>
