@@ -1,0 +1,5 @@
+[
+  { "name": "风景", "file": "scenery", "cover": "https://i.ibb.co/xxx/cover1.jpg" },
+  { "name": "人物", "file": "people" },
+  { "name": "旅行", "file": "travel" }
+]
