@@ -1,5 +1,3 @@
 [
-  { "name": "风景", "file": "scenery", "cover": "https://i.ibb.co/xxx/cover1.jpg" },
-  { "name": "人物", "file": "people" },
-  { "name": "旅行", "file": "travel" }
+  { "name": "蛋仔图片合集", "file": "scenery", "cover": "https://i.ibb.co/xxx/cover1.jpg" }
 ]
