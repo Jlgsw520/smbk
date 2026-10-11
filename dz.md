@@ -74,8 +74,6 @@
 
 ![](https://i.ibb.co/5WLGG7wk/com-honor-browser-20261009202555.jpg)
 
-![](https://i.ibb.co/Xk8w2xjN/com-honor-browser-20261009202606.png)
-
 ![](https://i.ibb.co/Z0CYnmh/com-honor-browser-20261009202713.png)
 
 ![](https://i.ibb.co/spYSMyw3/com-honor-browser-20261009202737.png)
