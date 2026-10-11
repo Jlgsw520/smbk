@@ -26,8 +26,6 @@
 
 ![14](https://jlgsw520.github.io/smbk/images/dz/com.honor.browser_20261009201233.jpg)
 
-![15](https://jlgsw520.github.io/smbk/images/dz/com.honor.browser_20261009201233.jpg)
-
 ![](https://jlgsw520.github.io/smbk/images/dz/com.honor.browser_20261009201301.png)
 
 ![](https://jlgsw520.github.io/smbk/images/dz/com.honor.browser_20261009201310.jpg)
