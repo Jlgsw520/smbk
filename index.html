@@ -4,9 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0c0f">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>资源合集（内容来自互联网）</title>
+<title>图片集</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;min-height:100%}
@@ -32,7 +30,6 @@ h1{margin:0 0 4px;font-size:22px;font-weight:700;letter-spacing:.3px}
   background:#131820;cursor:pointer;
   border:1px solid rgba(255,255,255,.05);
   transition:transform .12s,border-color .12s;
-  -webkit-user-select:none;user-select:none;
 }
 .card:active{transform:scale(.97);border-color:rgba(91,157,255,.4)}
 .cover{
@@ -51,10 +48,6 @@ h1{margin:0 0 4px;font-size:22px;font-weight:700;letter-spacing:.3px}
   text-shadow:0 2px 8px rgba(0,0,0,.7);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.info .count{
-  font-size:12px;color:#a3b2c6;margin-top:2px;
-  text-shadow:0 1px 4px rgba(0,0,0,.7);
-}
 .no-cover{
   position:absolute;inset:0;display:grid;place-items:center;
   font-size:40px;opacity:.35;
@@ -63,17 +56,11 @@ h1{margin:0 0 4px;font-size:22px;font-weight:700;letter-spacing:.3px}
 .msg{text-align:center;padding:60px 20px;color:#7c8798;line-height:1.7}
 .msg h2{color:#ccd6e3;font-size:16px;font-weight:600;margin:0 0 8px}
 .msg code{background:#1b2029;padding:2px 6px;border-radius:5px;color:#9db4d4;font-size:12px}
-.msg .spin{
-  width:26px;height:26px;border-radius:50%;margin:0 auto 14px;
-  border:2.5px solid rgba(255,255,255,.15);border-top-color:#5b9dff;
-  animation:spin .8s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1 id="title">资源合集（内容来自互联网）</h1>
+  <h1 id="title">图片集</h1>
   <p class="sub" id="sub">正在加载…</p >
   <main id="content"></main>
 </div>
@@ -89,10 +76,9 @@ function el(tag, cls, text){
   if (text != null) e.textContent = text;
   return e;
 }
-function showMsg(html, spinning){
+function showMsg(html){
   content.innerHTML = '';
   var box = el('div', 'msg');
-  if (spinning) box.appendChild(el('div', 'spin'));
   var tmp = document.createElement('div');
   tmp.innerHTML = html;
   while (tmp.firstChild) box.appendChild(tmp.firstChild);
@@ -110,7 +96,6 @@ function render(groups){
       img.src = g.cover;
       img.alt = '';
       img.loading = 'lazy';
-      img.decoding = 'async';
       img.onerror = function(){
         img.remove();
         card.insertBefore(el('div', 'no-cover', '🖼'), card.firstChild);
@@ -122,14 +107,10 @@ function render(groups){
     card.appendChild(el('div', 'shade'));
     var info = el('div', 'info');
     info.appendChild(el('h3', null, g.name || g.file));
-    if (g.count != null) info.appendChild(el('div', 'count', g.count + ' 张'));
     card.appendChild(info);
-    var file = g.file || g.name;
-    var label = g.name || g.file;
-    card.addEventListener('click', function(){
-      location.href = 'reader.html?g=' + encodeURIComponent(file)
-                    + '&n=' + encodeURIComponent(label);
-    });
+
+    var target = (g.file || g.name) + '.md';
+    card.addEventListener('click', function(){ location.href = target; });
     grid.appendChild(card);
   });
   content.appendChild(grid);
@@ -140,7 +121,7 @@ fetch('./list.json', { cache: 'no-cache' })
     return r.json();
   })
   .then(function(data){
-    var groups = Array.isArray(data) ? data : (data.groups || []);
+    var groups = Array.isArray(data) ? data : [];
     if (!groups.length){
       sub.textContent = '';
       showMsg('<h2>还没有分组</h2><p>请编辑 <code>list.json</code> 添加</p >');
@@ -148,7 +129,6 @@ fetch('./list.json', { cache: 'no-cache' })
     }
     sub.textContent = '共 ' + groups.length + ' 个分组';
     render(groups);
-    document.title = '图片集 · ' + groups.length + ' 组';
   })
   .catch(function(err){
     sub.textContent = '';
