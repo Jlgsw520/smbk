@@ -1,6 +1,1 @@
-<!DOCTYPE html>
-<html>
-<body>
 < img src="https://jlgsw520.github.io/smbk/images/dz/com.honor.browser_20261009200755.jpg" style="width:100%">
-</body>
-</html>
