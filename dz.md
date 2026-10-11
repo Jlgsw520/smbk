@@ -34,4 +34,6 @@
 
 ![](https://i.ibb.co/b5q0SRFc/com-honor-browser-20261009201441.png)
 
+![](https://i.ibb.co/0jxkGDGV/com-honor-browser-20261009201454.png)
+
 ![](https://i.ibb.co/27C43ktX/com-honor-browser-20261009201705.jpg)
