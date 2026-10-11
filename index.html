@@ -109,7 +109,7 @@ function render(groups){
     info.appendChild(el('h3', null, g.name || g.file));
     card.appendChild(info);
 
-    var target = (g.file || g.name) + '.md';
+    var target = g.file || g.name;
     card.addEventListener('click', function(){ location.href = target; });
     grid.appendChild(card);
   });
